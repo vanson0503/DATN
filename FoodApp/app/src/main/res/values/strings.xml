@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Food App</string>
+    <string name="login_title">Đăng Nhập</string>
+    <string name="username_hint">Tên đăng nhập</string>
+    <string name="password_hint">Mật khẩu</string>
+    <string name="repassword_hint">Nhập lại mật khẩu</string>
+    <string name="login_button">Đăng nhập</string>
+    <string name="login_with_google">Google</string>
+    <string name="login_with_twitter">Twitter</string>
+    <string name="phone_or_email_hint">Số điện thoại/Email</string>
+    <string name="ho_ten">Họ tên</string>
+    <string name="home">Home</string>
+    <string name="love">Love</string>
+    <string name="order">Order</string>
+    <string name="profile">Profile</string>
+    <string name="web_client_id">417686704828-7a7igmb4vujc9ifflc2tv51evlf619l5.apps.googleusercontent.com</string>
+</resources>
