@@ -369,6 +369,7 @@ fun ProductDetailScreen(
     id: Int,
     onBackClicked: () -> Unit,
     onCartClicked: () -> Unit,
+    onClickProduct:(Int)->Unit,
     viewAllReviewByProductId: (Int) -> Unit,
 ) {
     val context = LocalContext.current
@@ -389,10 +390,12 @@ fun ProductDetailScreen(
         productViewModel.getProductById(id)
         reviewViewModel.getReviewByProductId(id)
         productViewModel.getFavoriteProductByCustomerId(customerId)
+        productViewModel.getRelatedProducts(id)
     }
     val product by productViewModel.getProductById.observeAsState()
     val reviews by reviewViewModel.getReviewsByProductId.observeAsState()
     val productsFavorite by productViewModel.getFavoriteProductByCustomerId.observeAsState()
+    val relatedProducts by productViewModel.getRelatedProducts.observeAsState()
 
     LaunchedEffect(productsFavorite) {
         if (productsFavorite != null) {
@@ -525,7 +528,11 @@ fun ProductDetailScreen(
                                             )
                                             .clickable {
                                                 coroutineScope.launch {
-                                                    pagerState.scrollToPage(imageUrls.indexOf(imageUrl))
+                                                    pagerState.scrollToPage(
+                                                        imageUrls.indexOf(
+                                                            imageUrl
+                                                        )
+                                                    )
                                                 }
                                             }
                                     ) {
@@ -763,11 +770,12 @@ fun ProductDetailScreen(
                     }
                 }
                 item{
-                    Text(
-                        text = "Sản phẩm liên quan",
-                        fontSize = 18.sp,
-                        color = Color.Black
-                    )
+                    HorizontalListProduct(
+                        title = "Sản phẩm liên quan",
+                        productList = relatedProducts!!
+                    ) {
+                        onClickProduct(it)
+                    }
                 }
             }
         }
@@ -796,6 +804,39 @@ fun ProductDetailScreen(
         )
     }
 }
+
+
+@Composable
+fun ProductByCategoryScreen(
+    id:Int
+){
+    val context = LocalContext.current
+    val productRepository = remember { ProductRepository(RetrofitClient.productApiService) }
+    val productViewModel: ProductViewModel = remember { ProductViewModel(productRepository) }
+
+    LaunchedEffect(id){
+        productViewModel.getProductsByCategory(id)
+    }
+
+    val productsByCategory by productViewModel.getProductsByCategory.observeAsState()
+
+
+    if (productsByCategory == null) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator(color = Color.Black)
+            Text("Loading product details...")
+        }
+        return
+    }
+
+
+}
+
+
 
 
 
@@ -837,7 +878,11 @@ fun FavoriteProductsScreen(
         Modifier.background(Color.Gray),
     ) {
 
-        Column(Modifier.padding(it)) {
+        Column(Modifier
+            .padding(
+                top = it.calculateTopPadding()
+            )
+        ) {
             LazyColumn(state = scrollState) {
                 item {
                     VerticalListProduct(

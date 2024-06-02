@@ -147,7 +147,20 @@ fun ChatScreen(
                             singleLine = true,
                             trailingIcon = {
                                 IconButton(
-                                    onClick = { /* Xử lý hành động gửi */ }
+                                    onClick = {
+                                        if (textState.isNotEmpty()) {
+                                            viewModel.sendMessage(
+                                                MessageItem(
+                                                    content = textState,
+                                                    id = 1,
+                                                    sender_id = customerId,
+                                                    sender_type = "customer",
+                                                    created_at = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
+                                                )
+                                            )
+                                            textState = ""
+                                        }
+                                    }
                                 ) {
                                     Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
                                 }
@@ -212,17 +225,50 @@ fun MessageRow(message: MessageItem, isCurrentUser: Boolean) {
 
 
 fun convertToTimeAgo(dateTimeString: String): String {
+    // Determine the input format based on the dateTimeString
     val inputFormat = if (dateTimeString.contains("T")) {
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
     } else {
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
     }
 
+    // Parse the input date string to a Date object
     val date = inputFormat.parse(dateTimeString)
 
+    // Get the current time and calculate the time difference in milliseconds
+    val currentTime = System.currentTimeMillis()
+    val timeDifference = currentTime - (date?.time ?: 0)
 
-    val milliseconds = date?.time ?: 0
-    val prettyTime = PrettyTime(Locale("vi", "VN"))
-    return prettyTime.format(Date(milliseconds))
+    // Calculate time units in terms of milliseconds
+    val secondMillis = 1000
+    val minuteMillis = secondMillis * 60
+    val hourMillis = minuteMillis * 60
+    val dayMillis = hourMillis * 24
+    val weekMillis = dayMillis * 7
+    val monthMillis = dayMillis * 30
+    val yearMillis = dayMillis * 365
+
+    return when {
+        timeDifference < minuteMillis -> "ngay bây giờ"
+        timeDifference < 2 * minuteMillis -> "1 phút trước"
+        timeDifference < 50 * minuteMillis -> "${timeDifference / minuteMillis} phút trước"
+        timeDifference < 90 * minuteMillis -> "1 giờ trước"
+        timeDifference < 24 * hourMillis -> "${timeDifference / hourMillis} giờ trước"
+        timeDifference < 48 * hourMillis -> "ngày hôm qua"
+        timeDifference < 7 * dayMillis -> "${timeDifference / dayMillis} ngày trước"
+        timeDifference < 2 * weekMillis -> "tuần trước"
+        timeDifference < monthMillis -> "${timeDifference / weekMillis} tuần trước"
+        timeDifference < 2 * monthMillis -> "1 tháng trước"
+        timeDifference < yearMillis -> {
+            val months = timeDifference / monthMillis
+            if (months <= 1) "1 tháng trước" else "$months tháng trước"
+        }
+        else -> {
+            val years = timeDifference / yearMillis
+            if (years <= 1) "1 năm trước" else "$years năm trước"
+        }
+    }
 }
 

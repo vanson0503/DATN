@@ -62,6 +62,7 @@ sealed class Screen(
     data object Profile:Screen("profile",R.string.profile)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeScreenMain(
@@ -74,6 +75,7 @@ fun HomeScreenMain(
     onLocationClicked:()->Unit,
     onSupport:()->Unit,
     onCustomerInfo:()->Unit,
+    onClickCategory:(Int)->Unit,
     mainViewModel: MainViewModel = viewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -176,7 +178,8 @@ fun HomeScreenMain(
                 is Screen.Home -> HomeContent(
                     onClickSearch=onClickSearch,
                     onClickProduct=onClickProduct,
-                    onCartClicked = onCartClicked
+                    onCartClicked = onCartClicked,
+                    onClickCategory = onClickCategory
                 )
                 is Screen.Favorite -> FavoriteContent(onClickProduct = onClickProduct)
                 is Screen.Order -> OrderContent(onClickOrder = onClickOrder)
@@ -186,6 +189,11 @@ fun HomeScreenMain(
                     onSupport = onSupport,
                     onCustomerInfo = onCustomerInfo
                 )
+
+                Screen.Favorite -> TODO()
+                Screen.Home -> TODO()
+                Screen.Order -> TODO()
+                Screen.Profile -> TODO()
             }
         }
     }
@@ -197,12 +205,14 @@ fun HomeScreenMain(
 fun HomeContent(
     onClickSearch : ()->Unit,
     onClickProduct : (Int)->Unit,
-    onCartClicked : ()->Unit
+    onCartClicked : ()->Unit,
+    onClickCategory:(Int)->Unit
 ) {
     HomeScreen(
         onClickSearch = onClickSearch,
         onClickProduct = onClickProduct,
-        onCartClicked = onCartClicked
+        onCartClicked = onCartClicked,
+        onClickCategory = onClickCategory
     )
 }
 

@@ -187,13 +187,13 @@ fun RegisterScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
                     if(fullName.isEmpty()||email.isEmpty()||phoneNumber.isEmpty()||password.isEmpty()){
                         Toast.makeText(context, "Dữ liệu không được để trống!", Toast.LENGTH_SHORT).show()
                     }
-                    else if (isValidEmail(email) || isValidPhoneNumber(phoneNumber)){
+                    else if (isValidEmail(email) && isValidPhoneNumber(phoneNumber)){
                         if(password==repassword){
                             isLoading = true
                             authViewModel.register(fullName,email,phoneNumber, password){success,message->
@@ -258,7 +258,7 @@ fun RegisterScreen(
                         .background(color = MaterialTheme.colorScheme.primary)
                 )
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween

@@ -51,9 +51,30 @@ class ProductRepository(private val productApiService: ProductApiService) {
         sortBy: String? = null
     ): List<ProductItem> {
         val response = productApiService.getProductSearch(categoryIds, minPrice, maxPrice, keyword, minRating, sortBy)
+        Log.e("TAG", "getProductSearch: ${response.raw()} ${categoryIds.toString()}", )
         if (response.isSuccessful && response.body() != null) {
             return response.body()!!
         } else {
+            throw Exception(response.message())
+        }
+    }
+
+    suspend fun getRelatedProducts(id:Int):List<ProductItem>{
+        val response = productApiService.getRelatedProducts(id)
+        if(response.isSuccessful&&response.body()!=null){
+            return response.body()!!
+        }
+        else{
+            throw Exception(response.message())
+        }
+    }
+
+    suspend fun getProductsByCategory(id:Int):List<ProductItem>{
+        val response = productApiService.getProductsByCategory(id)
+        if(response.isSuccessful&&response.body()!=null){
+            return response.body()!!
+        }
+        else{
             throw Exception(response.message())
         }
     }

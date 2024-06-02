@@ -75,6 +75,7 @@ import com.example.foodapp.data.repository.CustomerRepository
 import com.example.foodapp.ui.screens.auth.PasswordTextField
 import com.example.foodapp.ui.theme.SoftCoral
 import com.example.foodapp.utils.BASE_IMAGE_AVATAR_URL
+import com.example.foodapp.utils.isValidPhoneNumber
 import com.example.foodapp.viewmodel.AuthViewModel
 import com.example.foodapp.viewmodel.CustomerViewModel
 import kotlinx.coroutines.delay
@@ -661,6 +662,7 @@ fun UpdateProfileScreen(
                             unfocusedIndicatorColor = Color.Transparent, // Loại bỏ hiệu ứng khi TextField không được focus
                             disabledIndicatorColor = Color.Transparent // Loại bỏ hiệu ứng khi TextField bị vô hiệu hóa
                         ),
+                        enabled = false,
                         shape = RoundedCornerShape(size = 10.dp) // Đảm bảo giá trị của 'size' là một nửa chiều cao của TextField
                     )
                     Text(
@@ -702,6 +704,7 @@ fun UpdateProfileScreen(
                 }
                 Button(
                     onClick = {
+                          if(!fullName.isEmpty()&& isValidPhoneNumber(phoneNumber)){
                               customerViewModel.updateCustomer(
                                   id = customerId,
                                   fullName = fullName,
@@ -719,6 +722,15 @@ fun UpdateProfileScreen(
                                       }
                                   }
                               )
+                          }
+                        else{
+                            if(!isValidPhoneNumber(phoneNumber)){
+                                Toast.makeText(context, "Vui lòng nhập đúng định dạng số điện thoại!", Toast.LENGTH_SHORT).show()
+                            }
+                              else{
+                                Toast.makeText(context, "Tên không được để trống!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

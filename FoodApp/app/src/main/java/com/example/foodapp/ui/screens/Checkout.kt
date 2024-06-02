@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,9 +47,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.foodapp.R
 import com.example.foodapp.data.api.RetrofitClient
 import com.example.foodapp.data.repository.CartRepository
 import com.example.foodapp.data.repository.LocationRepository
@@ -97,7 +98,7 @@ fun CheckoutFormCartScreen(
     }
     LaunchedEffect(orderSuccess) {
         if(orderSuccess){
-            delay(2000)
+            delay(1000)
             onCheckoutClick()
         }
     }
@@ -238,7 +239,7 @@ fun CheckoutFormCartScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Check out") },
+                title = { Text("Thanh toán") },
                 navigationIcon = {
                     IconButton(onClick = {
                         onBackClicked()
@@ -269,7 +270,7 @@ fun CheckoutFormCartScreen(
                     shape = RectangleShape
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ThumbUp,
+                        painterResource(id = R.drawable.attach_money),
                         contentDescription = "",
                         tint = Color.White
                     )
@@ -280,6 +281,7 @@ fun CheckoutFormCartScreen(
                 // Buy Now Button
                 Button(
                     onClick = {
+//                        for()
 
                         if(selectedPaymentMethod.value=="Tiền mặt"){
                             orderViewModel.addToOderFromCart(
@@ -419,7 +421,7 @@ fun PaymentMethodSelector(
                     containerColor = if (selectedPaymentMethod.value == "Banking") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
                 )
             ) {
-                Text("Banking", color = if (selectedPaymentMethod.value == "Banking") Color.White else Color.Black)
+                Text("Chuyển khoản", color = if (selectedPaymentMethod.value == "Banking") Color.White else Color.Black)
             }
         }
     }

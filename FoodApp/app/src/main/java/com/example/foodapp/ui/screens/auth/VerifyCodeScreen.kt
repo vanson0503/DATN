@@ -52,7 +52,6 @@ import com.example.foodapp.data.repository.AuthRepository
 import com.example.foodapp.ui.theme.CalmTeal
 import com.example.foodapp.ui.theme.SoftCoral
 import com.example.foodapp.utils.isValidEmail
-import com.example.foodapp.utils.rainbowColors
 import com.example.foodapp.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -91,6 +90,9 @@ fun VerifyCodeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Text(
+                text = "Mã xác nhận đã gửi về email thành công!",
+            )
             val coroutineScope = rememberCoroutineScope()
             var isResendEnabled by remember { mutableStateOf(true) }
             var remainingTime by remember { mutableIntStateOf(0) }

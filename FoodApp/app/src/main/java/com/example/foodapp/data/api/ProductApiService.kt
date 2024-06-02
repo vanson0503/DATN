@@ -33,6 +33,12 @@ interface ProductApiService {
         @Query("sort_by") sortBy: String? = null
     ): Response<List<ProductItem>>
 
+    @GET("products/related/{id}")
+    suspend fun getRelatedProducts(@Path("id") id: Int):Response<List<ProductItem>>
+
+    @GET("products/category/{id}")
+    suspend fun getProductsByCategory(@Path("id") id: Int):Response<List<ProductItem>>
+
     @GET("products/toprate")
     suspend fun getTopRateProduct():List<ProductItem>
 

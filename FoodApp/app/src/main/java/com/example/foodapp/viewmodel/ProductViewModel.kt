@@ -28,6 +28,14 @@ class ProductViewModel(private val productRepository: ProductRepository):ViewMod
     val searchProducts: LiveData<List<ProductItem>>
         get() = _searchProducts
 
+    private val _getRelatedProducts = MutableLiveData<List<ProductItem>>()
+    val getRelatedProducts: LiveData<List<ProductItem>>
+        get() = _getRelatedProducts
+
+    private val _getProductsByCategory = MutableLiveData<List<ProductItem>>()
+    val getProductsByCategory: LiveData<List<ProductItem>>
+        get() = _getProductsByCategory
+
     private val _getProductById = MutableLiveData<ProductItem>()
     val getProductById: LiveData<ProductItem>
         get() = _getProductById
@@ -67,6 +75,26 @@ class ProductViewModel(private val productRepository: ProductRepository):ViewMod
             try {
                 _getAllProduct.value = productRepository.getAllProduct()
             } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun getRelatedProducts(id:Int){
+        viewModelScope.launch {
+            try {
+                _getRelatedProducts.value = productRepository.getRelatedProducts(id)
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun getProductsByCategory(id:Int){
+        viewModelScope.launch {
+            try {
+                _getProductsByCategory.value = productRepository.getProductsByCategory(id)
+            }catch (e:Exception){
                 e.printStackTrace()
             }
         }

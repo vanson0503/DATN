@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
@@ -64,6 +65,9 @@ import com.example.foodapp.data.api.RetrofitClient
 import com.example.foodapp.data.repository.LocationRepository
 import com.example.foodapp.model.location.LocationItem
 import com.example.foodapp.ui.theme.SoftCoral
+import com.example.foodapp.utils.Province
+import com.example.foodapp.utils.isValidPhoneNumber
+import com.example.foodapp.utils.loadProvinces
 import com.example.foodapp.viewmodel.LocationViewModel
 
 
@@ -200,6 +204,7 @@ fun AddLocationScreen(
     val locationViewModel: LocationViewModel = remember { LocationViewModel(locationRepository) }
     val sharedPreferences = context.getSharedPreferences("customer_data", Context.MODE_PRIVATE)
     val customerId = sharedPreferences.getInt("customer_id",-1)
+    val location = remember { mutableStateOf("") }
 
 
     Scaffold(
@@ -227,19 +232,23 @@ fun AddLocationScreen(
                 OutlinedTextField(
                     value = name.value,
                     onValueChange = { name.value = it },
-                    label = { Text("Name") },
+                    label = { Text("Họ tên") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = phoneNumber.value,
                     onValueChange = { phoneNumber.value = it },
-                    label = { Text("Phone Number") },
+                    label = { Text("Số điện thoại") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                SelectLocationScreen{
+                    location.value = it
+                }
                 OutlinedTextField(
                     value = address.value,
                     onValueChange = { address.value = it },
-                    label = { Text("Address") },
+                    label = { Text("Địa chỉ chi tiết") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(
@@ -253,25 +262,31 @@ fun AddLocationScreen(
                 }
                 Button(
                     onClick = {
-                        setLoading(true)
-                        locationViewModel.addLocation(
-                            customerId = customerId,
-                            name = name.value,
-                            phoneNumber = phoneNumber.value,
-                            address = address.value,
-                            isDefault = isDefault.value,
-                            onResult = {result->
-                                if(result){
-                                    setLoading(false)
-                                    Toast.makeText(context, "Thêm thành công", Toast.LENGTH_SHORT).show()
-                                    onAddSuccess()
+                        if(isValidPhoneNumber(phoneNumber.value)){
+                            setLoading(true)
+                            locationViewModel.addLocation(
+                                customerId = customerId,
+                                name = name.value,
+                                phoneNumber = phoneNumber.value,
+                                address = address.value+", "+location.value,
+                                isDefault = isDefault.value,
+                                onResult = {result->
+                                    if(result){
+                                        setLoading(false)
+                                        Toast.makeText(context, "Thêm thành công", Toast.LENGTH_SHORT).show()
+                                        onAddSuccess()
+                                    }
+                                    else{
+                                        setLoading(false)
+                                        Toast.makeText(context, "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
-                                else{
-                                    setLoading(false)
-                                    Toast.makeText(context, "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        )
+                            )
+                        }
+                        else{
+                            Toast.makeText(context, "Vui lòng nhập đúng định dạng số điện thoại!", Toast.LENGTH_SHORT).show()
+                        }
+
                     },
                     modifier = Modifier.align(Alignment.End),
                     enabled = name.value.isNotBlank() && phoneNumber.value.isNotBlank() && address.value.isNotBlank() && !loading
@@ -279,7 +294,7 @@ fun AddLocationScreen(
                     if (loading) {
                         CircularProgressIndicator(modifier = Modifier.size(18.dp))
                     } else {
-                        Text("Add Location")
+                        Text("Thêm địa chỉ")
                     }
                 }
             }
@@ -552,6 +567,7 @@ fun LocationListScreen(
                             }
                         }
                         item {
+
                             Button(
                                 onClick = {
                                     onAddLocation()
@@ -629,6 +645,131 @@ fun LocationCard(
             Column(horizontalAlignment = Alignment.End) {
                 IconButton(onClick = { onEditLocation(location.id) }) {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SelectLocationScreen(
+    onSelectLocation: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val provinces: List<Province> = loadProvinces(context)
+    var selectedProvinceIndex by remember { mutableStateOf(0) }
+    var selectedDistrictIndex by remember { mutableStateOf(0) }
+    var selectedWardIndex by remember { mutableStateOf(0) }
+
+    // Variables to store the selected location details
+    var selectedProvinceName by remember { mutableStateOf("") }
+    var selectedDistrictName by remember { mutableStateOf("") }
+    var selectedWardName by remember { mutableStateOf("") }
+
+    // Use LaunchedEffect to automatically trigger the selection callback when indices change
+    LaunchedEffect(selectedProvinceIndex, selectedDistrictIndex, selectedWardIndex) {
+        // Get the selected location details
+        selectedProvinceName =
+            provinces[selectedProvinceIndex].province_name
+        selectedDistrictName =
+            provinces[selectedProvinceIndex].districts[selectedDistrictIndex].district_name
+        selectedWardName =
+            provinces[selectedProvinceIndex].districts[selectedDistrictIndex].wards[selectedWardIndex].ward_name
+        val address = "$selectedWardName, $selectedDistrictName, $selectedProvinceName"
+        // Pass the selected location details to the callback function
+        onSelectLocation(
+            address
+        )
+    }
+
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text(text = "Địa chỉ:")
+        Row {
+            Text("Tỉnh - Thành phố: ")
+            DropdownMenu(
+                items = provinces.map { it.province_name },
+                selectedIndex = selectedProvinceIndex,
+                onItemSelected = { index ->
+                    selectedProvinceIndex = index
+                    // Reset district and ward indices
+                    selectedDistrictIndex = 0
+                    selectedWardIndex = 0
+                },
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Select District
+        Row {
+            Text("Huyện: ")
+            DropdownMenu(
+                items = provinces[selectedProvinceIndex].districts.map { it.district_name },
+                selectedIndex = selectedDistrictIndex,
+                onItemSelected = { index ->
+                    selectedDistrictIndex = index
+                    // Reset ward index
+                    selectedWardIndex = 0
+                },
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row {
+            Text("Xã: ")
+            val wards = provinces[selectedProvinceIndex].districts[selectedDistrictIndex].wards
+            if (wards.isNotEmpty()) {
+                DropdownMenu(
+                    items = wards.map { it.ward_name },
+                    selectedIndex = selectedWardIndex,
+                    onItemSelected = { index ->
+                        selectedWardIndex = index
+                    },
+                )
+            } else {
+                selectedWardIndex = -1 // Reset the selected index if there are no wards
+                Text("Không có xã")
+            }
+        }
+
+    }
+}
+
+@Composable
+fun DropdownMenu(
+    items: List<String>,
+    selectedIndex: Int,
+    onItemSelected: (Int) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Text(
+            items[selectedIndex],
+            modifier = Modifier.clickable { expanded = true }
+        )
+
+        if (expanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                LazyColumn {
+                    itemsIndexed(items) { index, item ->
+                        Text(
+                            item,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onItemSelected(index)
+                                    expanded = false
+                                }
+                        )
+                    }
                 }
             }
         }

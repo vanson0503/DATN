@@ -79,6 +79,7 @@ import com.example.foodapp.ui.screens.auth.RegisterScreen
 import com.example.foodapp.ui.screens.auth.VerifyCodeForgotPasswordScreen
 import com.example.foodapp.ui.screens.auth.VerifyCodeScreen
 import com.example.foodapp.ui.theme.FoodAppTheme
+import com.example.foodapp.utils.loadProvinces
 import com.example.foodapp.viewmodel.ChatModelFactory
 import com.example.foodapp.viewmodel.ChatViewModel
 import com.example.foodapp.viewmodel.GoogleAuthUiClient
@@ -128,6 +129,7 @@ fun MainApp(
     googleAuthUiClient: GoogleAuthUiClient,
 ) {
     val context  = LocalContext.current
+    Log.e("TAG", "MainApp: ${loadProvinces(context)}", )
     val sharedPreferences = context.getSharedPreferences("customer_data", Context.MODE_PRIVATE)
     var customerIdInfo by remember {
         mutableIntStateOf(sharedPreferences.getInt("customer_id", -1))
@@ -152,7 +154,6 @@ fun MainApp(
 
     LaunchedEffect(customerIdInfo) {
         chatViewModel.reset(customerIdInfo)
-        Log.d("YourComposable", "Customer ID changed to: $customerIdInfo")
     }
     var defaultRouter = "loginScreen"
     if(customerIdInfo!=-1){
@@ -271,7 +272,9 @@ fun MainApp(
                             navController.navigate("searchScreen")
                         },
                         onClickProduct = {
-                            navController.navigate("productDetail/$it")
+                            navController.navigate("productDetail/$it"){
+                                popUpTo("productDetail/{id}") { inclusive = true }
+                            }
                         },
                         onItemSelected = {
 
@@ -297,6 +300,9 @@ fun MainApp(
                         onCustomerInfo = {
                             navController.navigate("profileDetailScreen")
                         },
+                        onClickCategory = {
+
+                        }
 
                     )
                 }
@@ -306,7 +312,9 @@ fun MainApp(
                             navController.popBackStack()
                         },
                         onProductClick = {
-                            navController.navigate("productDetail/$it")
+                            navController.navigate("productDetail/$it"){
+                                popUpTo("productDetail/{id}") { inclusive = true }
+                            }
                         }
                     )
                 }
@@ -324,26 +332,35 @@ fun MainApp(
                 composable(
                     "productDetail/{id}",
                     arguments = listOf(
-                        navArgument("id"){
+                        navArgument("id") {
                             type = NavType.IntType
                         }
-                    ),
-
-                    ){
-                    val id = it.arguments!!.getInt("id")
-                    ProductDetailScreen(
-                        id = id,
-                        onBackClicked = {
-                            navController.popBackStack()
-                        },
-                        onCartClicked = {
-                            navController.navigate("cart")
-                        },
-                        viewAllReviewByProductId = {productId->
-                            navController.navigate("reviewsByProduct/$productId")
-                        }
                     )
-
+                ) {
+                    val id = it.arguments?.getInt("id") ?: -1 // Ensure id is fetched safely
+                    if (id != -1) {
+                        ProductDetailScreen(
+                            id = id,
+                            onBackClicked = {
+                                navController.popBackStack()
+                            },
+                            onCartClicked = {
+                                navController.navigate("cart")
+                            },
+                            onClickProduct = { productId ->
+                                navController.navigate("productDetail/$productId") {
+                                    popUpTo("productDetail/{id}") { inclusive = true }
+                                }
+                            },
+                            viewAllReviewByProductId = { productId ->
+                                navController.navigate("reviewsByProduct/$productId")
+                            }
+                        )
+                    } else {
+                        // Handle the case where id is not valid (optional)
+                        // For example, navigate back or show an error message
+                        navController.popBackStack()
+                    }
                 }
 
                 composable("profileDetailScreen"){
@@ -395,7 +412,9 @@ fun MainApp(
                 composable("cart"){
                     CartScreen(
                         onClickProduct = {id->
-                            navController.navigate("productDetail/$id")
+                            navController.navigate("productDetail/$id"){
+                                popUpTo("productDetail/{id}") { inclusive = true }
+                            }
                         },
                         onBackClicked = {
                             navController.popBackStack()
@@ -411,7 +430,9 @@ fun MainApp(
                             navController.popBackStack()
                         },
                         onClickProduct = {id->
-                            navController.navigate("productDetail/$id")
+                            navController.navigate("productDetail/$id"){
+                                popUpTo("productDetail/{id}") { inclusive = true }
+                            }
                         },
                         onCheckoutClick = {
                             navController.navigate("homeScreen")

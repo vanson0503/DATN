@@ -119,7 +119,8 @@ fun TopHomeScreen(
 fun HomeScreen(
     onClickSearch : ()->Unit,
     onClickProduct : (Int)->Unit,
-    onCartClicked : () -> Unit
+    onCartClicked : () -> Unit,
+    onClickCategory:(Int)->Unit
 ) {
     val customerRepository = remember { CustomerRepository(customerApiService)}
     val productRepository = remember { ProductRepository(productApiService)}
@@ -197,8 +198,8 @@ fun HomeScreen(
                         ),
                         modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)
                     )
-                    CategoryListScreen(categories = categoryListState.value) {
-
+                    CategoryListScreen(categories = categoryListState.value) {id->
+                        onClickCategory(id)
                     }
                 }
 
